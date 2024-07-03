@@ -1,46 +1,46 @@
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import javax.swing.*; // Swingライブラリをインポート
+import java.awt.*; // AWTライブラリをインポート
+import java.awt.event.KeyAdapter; // キーイベントを処理するためのクラスをインポート
+import java.awt.event.KeyEvent; // キーイベントクラスをインポート
 
-public class TetrisField extends JPanel {
-    private static final int BLOCK_SIZE = 30; // ブロックのサイズ
-    private static final int ROWS = 20; // 行数
-    private static final int COLS = 10; // 列数
-    private static final int WIDTH = COLS * BLOCK_SIZE;
-    private static final int HEIGHT = ROWS * BLOCK_SIZE;
+public class TetrisField extends JPanel { // TetrisFieldクラスはJPanelを継承
+    private static final int BLOCK_SIZE = 30; // ブロックのサイズを定義
+    private static final int ROWS = 20; // フィールドの行数を定義
+    private static final int COLS = 10; // フィールドの列数を定義
+    private static final int WIDTH = COLS * BLOCK_SIZE; // フィールドの幅を定義
+    private static final int HEIGHT = ROWS * BLOCK_SIZE; // フィールドの高さを定義
 
-    private int[][] grid; // グリッドの状態
-    private Tetromino currentTetromino;
-    private int currentRow;
-    private int currentCol;
+    private int[][] grid; // グリッドの状態を保持する配列
+    private Tetromino currentTetromino; // 現在のテトリミノを保持
+    private int currentRow; // テトリミノの現在の行位置
+    private int currentCol; // テトリミノの現在の列位置
 
-    public TetrisField() {
-        setPreferredSize(new Dimension(WIDTH, HEIGHT));
-        setBackground(Color.BLACK);
-        grid = new int[ROWS][COLS];
+    public TetrisField() { // コンストラクタ
+        setPreferredSize(new Dimension(WIDTH, HEIGHT)); // パネルの推奨サイズを設定
+        setBackground(Color.BLACK); // 背景色を黒に設定
+        grid = new int[ROWS][COLS]; // グリッドを初期化
 
         // グリッドを初期化
         initGrid();
         // テトリミノを初期化
-        currentTetromino = new Tetromino(Tetromino.Shape.T);
-        currentRow = 0;
-        currentCol = COLS / 2 - 1;
+        currentTetromino = new Tetromino(Tetromino.Shape.T); // 初期テトリミノを設定
+        currentRow = 0; // テトリミノの初期行位置
+        currentCol = COLS / 2 - 1; // テトリミノの初期列位置
 
         // キーリスナーを追加
-        setFocusable(true);
-        addKeyListener(new KeyAdapter() {
+        setFocusable(true); // パネルをフォーカス可能に設定
+        addKeyListener(new KeyAdapter() { // キーリスナーを追加
             @Override
-            public void keyPressed(KeyEvent e) {
-                handleKeyPress(e);
+            public void keyPressed(KeyEvent e) { // キーが押されたときの処理
+                handleKeyPress(e); // キー入力を処理
             }
         });
     }
 
     // グリッドを初期化
     private void initGrid() {
-        for (int row = 0; row < ROWS; row++) {
-            for (int col = 0; col < COLS; col++) {
+        for (int row = 0; row < ROWS; row++) { // 各行を初期化
+            for (int col = 0; col < COLS; col++) { // 各列を初期化
                 grid[row][col] = 0; // 空のセルは0とする
             }
         }
@@ -48,22 +48,22 @@ public class TetrisField extends JPanel {
 
     // グリッドを描画
     @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        drawGrid(g);
-        drawTetromino(g);
+    protected void paintComponent(Graphics g) { // 描画コンポーネントをオーバーライド
+        super.paintComponent(g); // 親クラスの描画メソッドを呼び出し
+        drawGrid(g); // グリッドを描画
+        drawTetromino(g); // テトリミノを描画
     }
 
     // グリッドを描画するメソッド
     private void drawGrid(Graphics g) {
-        g.setColor(Color.GRAY);
+        g.setColor(Color.GRAY); // グリッドの線の色を設定
 
         // グリッドの線を描画
-        for (int row = 0; row < ROWS; row++) {
-            for (int col = 0; col < COLS; col++) {
-                g.drawRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-                if (grid[row][col] != 0) {
-                    drawBlock(g, row, col, grid[row][col]);
+        for (int row = 0; row < ROWS; row++) { // 各行を描画
+            for (int col = 0; col < COLS; col++) { // 各列を描画
+                g.drawRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE); // グリッドの枠線を描画
+                if (grid[row][col] != 0) { // セルが空でない場合
+                    drawBlock(g, row, col, grid[row][col]); // ブロックを描画
                 }
             }
         }
@@ -71,79 +71,79 @@ public class TetrisField extends JPanel {
 
     // ブロックを描画するメソッド
     private void drawBlock(Graphics g, int row, int col, int colorIndex) {
-        Color[] colors = {Color.BLACK, Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.MAGENTA, Color.CYAN, Color.ORANGE};
-        g.setColor(colors[colorIndex]);
-        g.fillRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-        g.setColor(Color.WHITE);
-        g.drawRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+        Color[] colors = {Color.BLACK, Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.MAGENTA, Color.CYAN, Color.ORANGE}; // 色の配列を定義
+        g.setColor(colors[colorIndex]); // ブロックの色を設定
+        g.fillRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE); // ブロックを塗りつぶし
+        g.setColor(Color.WHITE); // 枠線の色を白に設定
+        g.drawRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE); // 枠線を描画
     }
 
     // テトリミノを描画するメソッド
     private void drawTetromino(Graphics g) {
-        int[][] coords = currentTetromino.getCoords();
-        for (int[] coord : coords) {
-            int row = currentRow + coord[1];
-            int col = currentCol + coord[0];
-            drawBlock(g, row, col, currentTetromino.getShape().ordinal() + 1);
+        int[][] coords = currentTetromino.getCoords(); // 現在のテトリミノの座標を取得
+        for (int[] coord : coords) { // 各ブロックを描画
+            int row = currentRow + coord[1]; // ブロックの行位置を計算
+            int col = currentCol + coord[0]; // ブロックの列位置を計算
+            drawBlock(g, row, col, currentTetromino.getShape().ordinal() + 1); // ブロックを描画
         }
     }
 
     // テトリミノを設定するメソッド
     public void setTetromino(Tetromino tetromino) {
-        this.currentTetromino = tetromino;
-        this.currentRow = 0;
-        this.currentCol = COLS / 2 - 1;
-        repaint();
+        this.currentTetromino = tetromino; // テトリミノを設定
+        this.currentRow = 0; // 行位置をリセット
+        this.currentCol = COLS / 2 - 1; // 列位置をリセット
+        repaint(); // 再描画を要求
     }
 
     // キー入力を処理するメソッド
     private void handleKeyPress(KeyEvent e) {
-        switch (e.getKeyCode()) {
-            case KeyEvent.VK_LEFT:
-                moveTetromino(-1);
+        switch (e.getKeyCode()) { // 押されたキーを判定
+            case KeyEvent.VK_LEFT: // 左キーの場合
+                moveTetromino(-1); // テトリミノを左に移動
                 break;
-            case KeyEvent.VK_RIGHT:
-                moveTetromino(1);
+            case KeyEvent.VK_RIGHT: // 右キーの場合
+                moveTetromino(1); // テトリミノを右に移動
                 break;
         }
     }
 
     // テトリミノを左右に移動するメソッド
     private void moveTetromino(int direction) {
-        int newCol = currentCol + direction;
-        if (canMoveTo(newCol, currentRow)) {
-            currentCol = newCol;
-            repaint();
+        int newCol = currentCol + direction; // 新しい列位置を計算
+        if (canMoveTo(newCol, currentRow)) { // 移動可能かをチェック
+            currentCol = newCol; // 列位置を更新
+            repaint(); // 再描画を要求
         }
     }
 
     // テトリミノが指定された位置に移動可能かをチェックするメソッド
     private boolean canMoveTo(int col, int row) {
-        int[][] coords = currentTetromino.getCoords();
-        for (int[] coord : coords) {
-            int newCol = col + coord[0];
-            int newRow = row + coord[1];
-            if (newCol < 0 || newCol >= COLS || newRow < 0 || newRow >= ROWS) {
-                return false; // フィールドの範囲外
+        int[][] coords = currentTetromino.getCoords(); // 現在のテトリミノの座標を取得
+        for (int[] coord : coords) { // 各ブロックをチェック
+            int newCol = col + coord[0]; // 新しい列位置を計算
+            int newRow = row + coord[1]; // 新しい行位置を計算
+            if (newCol < 0 || newCol >= COLS || newRow < 0 || newRow >= ROWS) { // フィールドの範囲外かをチェック
+                return false; // 移動不可
             }
-            if (grid[newRow][newCol] != 0) {
-                return false; // 他のブロックと衝突
+            if (grid[newRow][newCol] != 0) { // 他のブロックと衝突するかをチェック
+                return false; // 移動不可
             }
         }
-        return true;
+        return true; // 移動可能
     }
 
     public static void main(String[] args) {
-        JFrame frame = new JFrame("Tetris Field");
-        TetrisField tetrisField = new TetrisField();
+        JFrame frame = new JFrame("Tetris Field"); // 新しいフレームを作成
+        TetrisField tetrisField = new TetrisField(); // 新しいTetrisFieldを作成
         
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.add(tetrisField);
-        frame.pack();
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // フレームを閉じるときの動作を設定
+        frame.add(tetrisField); // フレームにTetrisFieldを追加
+        frame.pack(); // フレームのサイズを調整
+        frame.setLocationRelativeTo(null); // フレームの位置を中央に設定
+        frame.setVisible(true); // フレームを表示
 
         // デモ用にテトリミノを設定
-        tetrisField.setTetromino(new Tetromino(Tetromino.Shape.I));
+        tetrisField.setTetromino(new Tetromino(Tetromino.Shape.I)); // 初期テトリミノを設定
     }
 }
