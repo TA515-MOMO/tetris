@@ -1,0 +1,103 @@
+import javax.swing.*; // SwingのGUIコンポーネントをインポート
+import java.awt.*; // グラフィックス関連のクラスをインポート
+
+public class TetrisField extends JPanel {
+    private static final int BLOCK_SIZE = 30; // ブロックのサイズ（ピクセル単位）
+    private static final int ROWS = 20; // フィールドの行数
+    private static final int COLS = 10; // フィールドの列数
+    private static final int WIDTH = COLS * BLOCK_SIZE; // フィールドの幅
+    private static final int HEIGHT = ROWS * BLOCK_SIZE; // フィールドの高さ
+
+    private int[][] grid; // フィールドのグリッド状態を保持する2次元配列
+    private Tetromino currentTetromino; // 現在のテトリミノ
+    private int currentRow; // 現在のテトリミノの行位置
+    private int currentCol; // 現在のテトリミノの列位置
+
+    public TetrisField() {
+        setPreferredSize(new Dimension(WIDTH, HEIGHT)); // パネルの推奨サイズを設定
+        setBackground(Color.BLACK); // パネルの背景色を黒に設定
+        grid = new int[ROWS][COLS]; // グリッド配列を初期化
+
+        // グリッドを初期化
+        initGrid();
+        // 初期のテトリミノを設定（ここではT字型）
+        currentTetromino = new Tetromino(Tetromino.Shape.T);
+        currentRow = 0; // 初期の行位置は最上部
+        currentCol = COLS / 2 - 1; // 初期の列位置は中央
+    }
+
+    // グリッドを初期化するメソッド
+    private void initGrid() {
+        for (int row = 0; row < ROWS; row++) { // 全ての行をループ
+            for (int col = 0; col < COLS; col++) { // 全ての列をループ
+                grid[row][col] = 0; // 全てのセルを空（0）に設定
+            }
+        }
+    }
+
+    // グリッドを描画するメソッド
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g); // 親クラスの描画処理を呼び出す
+        drawGrid(g); // グリッドを描画
+        drawTetromino(g); // 現在のテトリミノを描画
+    }
+
+    // グリッドを描画するメソッド
+    private void drawGrid(Graphics g) {
+        g.setColor(Color.GRAY); // グリッドの線の色を設定
+
+        // グリッドの線を描画
+        for (int row = 0; row < ROWS; row++) { // 全ての行をループ
+            for (int col = 0; col < COLS; col++) { // 全ての列をループ
+                g.drawRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE); // グリッドの線を描画
+                if (grid[row][col] != 0) { // グリッドのセルが空でない場合
+                    drawBlock(g, row, col, grid[row][col]); // セルをブロックとして描画
+                }
+            }
+        }
+    }
+
+    // ブロックを描画するメソッド
+    private void drawBlock(Graphics g, int row, int col, int colorIndex) {
+        // ブロックの色の配列（インデックスで色を指定）
+        Color[] colors = {Color.BLACK, Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.MAGENTA, Color.CYAN, Color.ORANGE};
+        g.setColor(colors[colorIndex]); // ブロックの色を設定
+        g.fillRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE); // ブロックを塗りつぶす
+        g.setColor(Color.WHITE); // ブロックの枠線の色を設定
+        g.drawRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE); // ブロックの枠線を描画
+    }
+
+    // 現在のテトリミノを描画するメソッド
+    private void drawTetromino(Graphics g) {
+        int[][] coords = currentTetromino.getCoords(); // 現在のテトリミノの座標を取得
+        for (int[] coord : coords) { // 各ブロックの座標をループ
+            int row = currentRow + coord[1]; // フィールド内の行位置
+            int col = currentCol + coord[0]; // フィールド内の列位置
+            drawBlock(g, row, col, currentTetromino.getShape().ordinal() + 1); // ブロックを描画（色はテトリミノのタイプに基づく）
+        }
+    }
+
+    // テトリミノを設定するメソッド
+    public void setTetromino(Tetromino tetromino) {
+        this.currentTetromino = tetromino; // 現在のテトリミノを更新
+        this.currentRow = 0; // 初期の行位置は最上部
+        this.currentCol = COLS / 2 - 1; // 初期の列位置は中央
+        repaint(); // 再描画を要求
+    }
+
+    // メインメソッド
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("Tetris Field"); // 新しいJFrameを作成
+        TetrisField tetrisField = new TetrisField(); // 新しいTetrisFieldパネルを作成
+        
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // 閉じるボタンを押した時にプログラムを終了
+        frame.add(tetrisField); // フィールドパネルをフレームに追加
+        frame.pack(); // フレームのサイズを自動調整
+        frame.setLocationRelativeTo(null); // フレームを画面中央に配置
+        frame.setVisible(true); // フレームを表示
+
+        // デモ用にテトリミノを設定
+        tetrisField.setTetromino(new Tetromino(Tetromino.Shape.I)); // I字型テトリミノを設定
+    }
+}
