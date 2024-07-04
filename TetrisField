@@ -14,6 +14,7 @@ public class TetrisField extends JPanel { // TetrisFieldクラスはJPanelを継
     private Tetromino currentTetromino; // 現在のテトリミノを保持
     private int currentRow; // テトリミノの現在の行位置
     private int currentCol; // テトリミノの現在の列位置
+    private TetrominoGenerator generator; // テトリミノ生成器
 
     public TetrisField() { // コンストラクタ
         setPreferredSize(new Dimension(WIDTH, HEIGHT)); // パネルの推奨サイズを設定
@@ -22,10 +23,10 @@ public class TetrisField extends JPanel { // TetrisFieldクラスはJPanelを継
 
         // グリッドを初期化
         initGrid();
-        // テトリミノを初期化
-        currentTetromino = new Tetromino(Tetromino.Shape.T); // 初期テトリミノを設定
-        currentRow = 0; // テトリミノの初期行位置
-        currentCol = COLS / 2 - 1; // テトリミノの初期列位置
+        // テトリミノ生成器を初期化
+        generator = new TetrominoGenerator(); // テトリミノ生成器を初期化
+        // ランダムなテトリミノを設定
+        setTetromino(generator.generateRandomTetromino()); // ランダムなテトリミノを設定
 
         // キーリスナーを追加
         setFocusable(true); // パネルをフォーカス可能に設定
@@ -136,14 +137,11 @@ public class TetrisField extends JPanel { // TetrisFieldクラスはJPanelを継
     public static void main(String[] args) {
         JFrame frame = new JFrame("Tetris Field"); // 新しいフレームを作成
         TetrisField tetrisField = new TetrisField(); // 新しいTetrisFieldを作成
-        
+
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // フレームを閉じるときの動作を設定
         frame.add(tetrisField); // フレームにTetrisFieldを追加
         frame.pack(); // フレームのサイズを調整
         frame.setLocationRelativeTo(null); // フレームの位置を中央に設定
         frame.setVisible(true); // フレームを表示
-
-        // デモ用にテトリミノを設定
-        tetrisField.setTetromino(new Tetromino(Tetromino.Shape.I)); // 初期テトリミノを設定
     }
 }
