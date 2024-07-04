@@ -1,0 +1,14 @@
+import java.util.Random;
+
+public class TetrominoGenerator { // TetrominoGeneratorクラス
+    private Random random; // ランダムジェネレータ
+
+    public TetrominoGenerator() { // コンストラクタ
+        random = new Random(); // ランダムジェネレータを初期化
+    }
+
+    public Tetromino generateRandomTetromino() { // ランダムなテトリミノを生成
+        int shapeIndex = random.nextInt(Tetromino.Shape.values().length); // ランダムに形状を選ぶ
+        return new Tetromino(Tetromino.Shape.values()[shapeIndex]); // ランダムなテトリミノを返す
+    }
+}
