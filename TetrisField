@@ -1,217 +1,238 @@
 package tetris;
 
-// AWTライブラリをインポート
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.event.ActionEvent; // アクションイベントクラスをインポート
-import java.awt.event.ActionListener; // アクションリスナーをインポート
-import java.awt.event.KeyAdapter; // キーイベントを処理するためのクラスをインポート
-import java.awt.event.KeyEvent; // キーイベントクラスをインポート
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
-// AWTライブラリをインポート
-// Swingライブラリをインポート
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
-public class TetrisField extends JPanel { // TetrisFieldクラスはJPanelを継承
-    private static final int BLOCK_SIZE = 30; // ブロックのサイズを定義
-    private static final int ROWS = 20; // フィールドの行数を定義
-    private static final int COLS = 10; // フィールドの列数を定義
-    private static final int WIDTH = COLS * BLOCK_SIZE; // フィールドの幅を定義
-    private static final int HEIGHT = ROWS * BLOCK_SIZE; // フィールドの高さを定義
+// TetrisField クラスの定義
+public class TetrisField extends JPanel {
+    // 定数の定義
+    private static final int BLOCK_SIZE = 30; // ブロックのサイズ
+    private static final int ROWS = 20; // フィールドの行数
+    private static final int COLS = 10; // フィールドの列数
+    private static final int WIDTH = COLS * BLOCK_SIZE; // フィールドの幅
+    private static final int HEIGHT = ROWS * BLOCK_SIZE; // フィールドの高さ
 
-    private int[][] grid; // グリッドの状態を保持する配列
-    private Tetromino currentTetromino; // 現在のテトリミノを保持
-    private int currentRow; // テトリミノの現在の行位置
-    private int currentCol; // テトリミノの現在の列位置
-    private Timer timer; // タイマー
+    // フィールドの状態を格納する配列
+    private int[][] grid;
+    private Tetromino currentTetromino; // 現在のテトリミノ
+    private int currentRow; // テトリミノの現在の行
+    private int currentCol; // テトリミノの現在の列
+    private Timer timer; // ゲームのタイマー
 
-    public TetrisField() { // コンストラクタ
+    // TetrisField コンストラクタ
+    public TetrisField() {
         setPreferredSize(new Dimension(WIDTH, HEIGHT)); // パネルの推奨サイズを設定
-        setBackground(Color.BLACK); // 背景色を黒に設定
-        grid = new int[ROWS][COLS]; // グリッドを初期化
+        setBackground(Color.BLACK); // パネルの背景色を黒に設定
+        grid = new int[ROWS][COLS]; // フィールドの状態を初期化
+        initGrid(); // フィールドを初期化
+        setTetromino(generateRandomTetromino()); // ランダムなテトリミノを生成して設定
 
-        // グリッドを初期化
-        initGrid();
-        // ランダムなテトリミノを設定
-        setTetromino(generateRandomTetromino()); // ランダムなテトリミノを設定
-
-        // タイマーを設定してテトリミノを自由落下させる
-        timer = new Timer(1000 / 60, new ActionListener() { // 60フレーム毎にアクションを実行
-            private int frameCount = 0;
+        // タイマーの設定（60フレームごとにアクションを実行）
+        timer = new Timer(1000 / 60, new ActionListener() {
+            private int frameCount = 0; // フレームカウント
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                frameCount++;
-                if (frameCount >= 60) { // 60フレームごとにテトリミノを落下させる
-                    frameCount = 0;
-                    moveTetrominoDown(); // テトリミノを一マス下に移動
+                frameCount++; // フレームカウントを増加
+                if (frameCount >= 60) {
+                    frameCount = 0; // カウントをリセット
+                    moveTetrominoDown(); // テトリミノを下に移動
                 }
-                repaint(); // 再描画を要求
+                repaint(); // パネルを再描画
             }
         });
         timer.start(); // タイマーを開始
 
-        // キーリスナーを追加
-        setFocusable(true); // パネルをフォーカス可能に設定
-        addKeyListener(new KeyAdapter() { // キーリスナーを追加
+        setFocusable(true); // フォーカス可能に設定
+        addKeyListener(new KeyAdapter() { // キーイベントリスナーを追加
             @Override
-            public void keyPressed(KeyEvent e) { // キーが押されたときの処理
-                handleKeyPress(e); // キー入力を処理
+            public void keyPressed(KeyEvent e) {
+                handleKeyPress(e); // キーが押されたときにハンドラを呼び出し
             }
         });
     }
 
-    // グリッドを初期化
+    // フィールドを初期化
     private void initGrid() {
-        for (int row = 0; row < ROWS; row++) { // 各行を初期化
-            for (int col = 0; col < COLS; col++) { // 各列を初期化
-                grid[row][col] = 0; // 空のセルは0とする
+        for (int row = 0; row < ROWS; row++) {
+            for (int col = 0; col < COLS; col++) {
+                grid[row][col] = 0; // すべてのセルを0に設定
             }
         }
     }
 
-    // グリッドを描画
+    // パネルの描画処理
     @Override
-    protected void paintComponent(Graphics g) { // 描画コンポーネントをオーバーライド
+    protected void paintComponent(Graphics g) {
         super.paintComponent(g); // 親クラスの描画メソッドを呼び出し
         drawGrid(g); // グリッドを描画
         drawTetromino(g); // テトリミノを描画
     }
 
-    // グリッドを描画するメソッド
+    // グリッドを描画
     private void drawGrid(Graphics g) {
-        g.setColor(Color.GRAY); // グリッドの線の色を設定
-
-        // グリッドの線を描画
-        for (int row = 0; row < ROWS; row++) { // 各行を描画
-            for (int col = 0; col < COLS; col++) { // 各列を描画
-                g.drawRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE); // グリッドの枠線を描画
-                if (grid[row][col] != 0) { // セルが空でない場合
+        g.setColor(Color.GRAY); // 色を灰色に設定
+        for (int row = 0; row < ROWS; row++) {
+            for (int col = 0; col < COLS; col++) {
+                g.drawRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE); // グリッドを描画
+                if (grid[row][col] != 0) {
                     drawBlock(g, row, col, grid[row][col]); // ブロックを描画
                 }
             }
         }
     }
 
-    // ブロックを描画するメソッド
+    // ブロックを描画
     private void drawBlock(Graphics g, int row, int col, int colorIndex) {
-        Color[] colors = {Color.BLACK, Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.MAGENTA, Color.CYAN, Color.ORANGE}; // 色の配列を定義
-        g.setColor(colors[colorIndex]); // ブロックの色を設定
+        Color[] colors = {Color.BLACK, Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.MAGENTA, Color.CYAN, Color.ORANGE}; // 色の配列
+        g.setColor(colors[colorIndex]); // 色を設定
         g.fillRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE); // ブロックを塗りつぶし
-        g.setColor(Color.WHITE); // 枠線の色を白に設定
-        g.drawRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE); // 枠線を描画
+        g.setColor(Color.WHITE); // 色を白に設定
+        g.drawRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE); // ブロックの枠を描画
     }
 
-    // テトリミノを描画するメソッド
+    // テトリミノを描画
     private void drawTetromino(Graphics g) {
-        int[][] coords = currentTetromino.getCoords(); // 現在のテトリミノの座標を取得
-        for (int[] coord : coords) { // 各ブロックを描画
-            int row = currentRow + coord[1]; // ブロックの行位置を計算
-            int col = currentCol + coord[0]; // ブロックの列位置を計算
+        int[][] coords = currentTetromino.getCoords(); // テトリミノの座標を取得
+        for (int[] coord : coords) {
+            int row = currentRow + coord[1];
+            int col = currentCol + coord[0];
             drawBlock(g, row, col, currentTetromino.getShape().ordinal() + 1); // ブロックを描画
         }
     }
 
-    // テトリミノを設定するメソッド
+    // テトリミノを設定
     public void setTetromino(Tetromino tetromino) {
-        this.currentTetromino = tetromino; // テトリミノを設定
-        this.currentRow = 0; // 行位置をリセット
-        this.currentCol = COLS / 2 - 1; // 列位置をリセット
-        repaint(); // 再描画を要求
+        this.currentTetromino = tetromino; // 現在のテトリミノを設定
+        this.currentRow = 0; // テトリミノの行を初期化
+        this.currentCol = COLS / 2 - 1; // テトリミノの列を初期化
+        repaint(); // パネルを再描画
     }
 
-    // キー入力を処理するメソッド
+    // キーが押されたときの処理
     private void handleKeyPress(KeyEvent e) {
-        switch (e.getKeyCode()) { // 押されたキーを判定
-            case KeyEvent.VK_LEFT: // 左キーの場合
-                moveTetromino(-1, 0); // テトリミノを左に移動
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_LEFT: // 左キー
+                moveTetromino(-1, 0); // 左に移動
                 break;
-            case KeyEvent.VK_RIGHT: // 右キーの場合
-                moveTetromino(1, 0); // テトリミノを右に移動
+            case KeyEvent.VK_RIGHT: // 右キー
+                moveTetromino(1, 0); // 右に移動
                 break;
-            case KeyEvent.VK_DOWN: // 下キーの場合
-                moveTetromino(0, 1); // テトリミノを下に移動
+            case KeyEvent.VK_DOWN: // 下キー
+                rotateTetromino(false); // 反時計回りに回転
+                break;
+            case KeyEvent.VK_UP: // 上キー
+                rotateTetromino(true); // 時計回りに回転
                 break;
         }
     }
 
-    // テトリミノを移動するメソッド
+    // テトリミノを移動
     private void moveTetromino(int deltaX, int deltaY) {
-        int newCol = currentCol + deltaX; // 新しい列位置を計算
-        int newRow = currentRow + deltaY; // 新しい行位置を計算
-        if (canMoveTo(newCol, newRow)) { // 移動可能かをチェック
-            currentCol = newCol; // 列位置を更新
-            currentRow = newRow; // 行位置を更新
-            repaint(); // 再描画を要求
-        } else if (deltaY != 0 && !canMoveTo(newCol, newRow)) { // 下に移動できない場合
+        int newCol = currentCol + deltaX;
+        int newRow = currentRow + deltaY;
+        if (canMoveTo(newCol, newRow, currentTetromino.getCoords())) {
+            currentCol = newCol;
+            currentRow = newRow;
+            repaint();
+        } else if (deltaY != 0 && !canMoveTo(newCol, newRow, currentTetromino.getCoords())) {
             placeTetromino(); // テトリミノを配置
         }
     }
 
-    // テトリミノを下に移動するメソッド
+    // テトリミノを下に移動
     private void moveTetrominoDown() {
-        moveTetromino(0, 1); // 下に移動
+        moveTetromino(0, 1);
     }
 
-    // テトリミノを配置するメソッド
+    // テトリミノを配置
     private void placeTetromino() {
-        int[][] coords = currentTetromino.getCoords(); // 現在のテトリミノの座標を取得
-        for (int[] coord : coords) { // 各ブロックを配置
-            int row = currentRow + coord[1]; // ブロックの行位置を計算
-            int col = currentCol + coord[0]; // ブロックの列位置を計算
-            grid[row][col] = currentTetromino.getShape().ordinal() + 1; // グリッドにブロックを配置
+        int[][] coords = currentTetromino.getCoords();
+        for (int[] coord : coords) {
+            int row = currentRow + coord[1];
+            int col = currentCol + coord[0];
+            grid[row][col] = currentTetromino.getShape().ordinal() + 1; // テトリミノをフィールドに配置
         }
-        setTetromino(generateRandomTetromino()); // 新しいテトリミノを設定
+        setTetromino(generateRandomTetromino()); // 新しいテトリミノを生成
     }
 
-    // テトリミノが指定された位置に移動可能かをチェックするメソッド
-    private boolean canMoveTo(int col, int row) {
-        int[][] coords = currentTetromino.getCoords(); // 現在のテトリミノの座標を取得
-        for (int[] coord : coords) { // 各ブロックをチェック
-            int newCol = col + coord[0]; // 新しい列位置を計算
-            int newRow = row + coord[1]; // 新しい行位置を計算
-            if (newCol < 0 || newCol >= COLS || newRow < 0 || newRow >= ROWS) { // フィールドの範囲外かをチェック
-                return false; // 移動不可
+    // 指定された位置にテトリミノを移動できるか確認
+    private boolean canMoveTo(int col, int row, int[][] coords) {
+        for (int[] coord : coords) {
+            int newCol = col + coord[0];
+            int newRow = row + coord[1];
+            if (newCol < 0 || newCol >= COLS || newRow < 0 || newRow >= ROWS) {
+                return false; // フィールドの範囲外
             }
-            if (grid[newRow][newCol] != 0) { // 他のブロックと衝突するかをチェック
-                return false; // 移動不可
+            if (grid[newRow][newCol] != 0) {
+                return false; // 他のブロックと衝突
             }
         }
-        return true; // 移動可能
+        return true;
     }
 
-    // ランダムなテトリミノを生成するメソッド
+    // テトリミノを回転
+    private void rotateTetromino(boolean clockwise) {
+        int[][] rotatedCoords = currentTetromino.getRotatedCoords(clockwise);
+        if (canMoveTo(currentCol, currentRow, rotatedCoords)) {
+            currentTetromino.setCoords(rotatedCoords);
+        } else {
+            // テトリミノが壁にぶつかる場合の調整
+            int[][] wallKick = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}}; // 調整用のオフセット
+            for (int[] offset : wallKick) {
+                if (canMoveTo(currentCol + offset[0], currentRow + offset[1], rotatedCoords)) {
+                    currentCol += offset[0];
+                    currentRow += offset[1];
+                    currentTetromino.setCoords(rotatedCoords);
+                    break;
+                }
+            }
+        }
+        repaint();
+    }
+
+    // ランダムなテトリミノを生成
     private Tetromino generateRandomTetromino() {
-        Tetromino.Shape[] shapes = Tetromino.Shape.values(); // すべてのテトリミノの形状を取得
-        int index = (int) (Math.random() * shapes.length); // ランダムなインデックスを生成
-        return new Tetromino(shapes[index]); // ランダムなテトリミノを生成
+        Tetromino.Shape[] shapes = Tetromino.Shape.values();
+        int index = (int) (Math.random() * shapes.length);
+        return new Tetromino(shapes[index]);
     }
 
+    // メインメソッド
     public static void main(String[] args) {
-        JFrame frame = new JFrame("Tetris Field"); // 新しいフレームを作成
-        TetrisField tetrisField = new TetrisField(); // 新しいTetrisFieldを作成
-        
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // フレームを閉じるときの動作を設定
-        frame.add(tetrisField); // フレームにTetrisFieldを追加
-        frame.pack(); // フレームのサイズを調整
-        frame.setLocationRelativeTo(null); // フレームの位置を中央に設定
-        frame.setVisible(true); // フレームを表示
+        JFrame frame = new JFrame("Tetris Field");
+        TetrisField tetrisField = new TetrisField();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.add(tetrisField);
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
     }
 }
 
+// テトリミノクラスの定義
 class Tetromino {
+    // テトリミノの形状を定義する列挙型
     public enum Shape { I, O, T, S, Z, J, L }
-    private Shape shape;
-    private int[][] coords;
+    private Shape shape; // 現在の形状
+    private int[][] coords; // テトリミノの座標
 
+    // コンストラクタ
     public Tetromino(Shape shape) {
         this.shape = shape;
-        setShape(shape);
+        setShape(shape); // 形状に応じた座標を設定
     }
 
+    // 形状に応じた座標を設定
     private void setShape(Shape shape) {
         switch (shape) {
             case I:
@@ -238,11 +259,35 @@ class Tetromino {
         }
     }
 
+    // 座標を取得
     public int[][] getCoords() {
         return coords;
     }
 
+    // 座標を設定
+    public void setCoords(int[][] coords) {
+        this.coords = coords;
+    }
+
+    // 形状を取得
     public Shape getShape() {
         return shape;
+    }
+
+    // 指定された方向に回転させた座標を取得
+    public int[][] getRotatedCoords(boolean clockwise) {
+        int[][] rotatedCoords = new int[4][2];
+        for (int i = 0; i < 4; i++) {
+            int x = coords[i][0];
+            int y = coords[i][1];
+            if (clockwise) {
+                rotatedCoords[i][0] = y;
+                rotatedCoords[i][1] = -x;
+            } else {
+                rotatedCoords[i][0] = -y;
+                rotatedCoords[i][1] = x;
+            }
+        }
+        return rotatedCoords;
     }
 }
